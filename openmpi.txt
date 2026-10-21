@@ -1,0 +1,28 @@
+#--mpi---#
+sudo apt update && sudo apt install -y mpich
+nano mpi.c
+#include <stdio.h>
+#include <mpi.h>
+int main(int argc,char *argv[]){
+ int a[]={10,25,7,40,15},r,m;
+ MPI_Init(&argc,&argv);
+ MPI_Comm_rank(MPI_COMM_WORLD,&r);
+ MPI_Reduce(&a[r],&m,1,MPI_INT,MPI_MAX,0,MPI_COMM_WORLD);
+ if(r==0) printf("Greatest = %d\n",m);
+ MPI_Finalize();
+}
+mpicc mpi.c -o mpi
+mpirun -np 5 ./mpi
+
+nano omp.c
+#include <stdio.h>
+#include <omp.h>
+int main(){
+ int a[]={10,25,7,40,15},m=0,i;
+ #pragma omp parallel for reduction(max:m)
+ for(i=0;i<5;i++)
+  if(a[i]>m) m=a[i];
+ printf("Greatest = %d\n",m);
+}
+gcc -fopenmp omp.c -o omp
+./omp

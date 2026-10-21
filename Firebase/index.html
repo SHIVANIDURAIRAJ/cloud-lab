@@ -1,0 +1,398 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud Student Management</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #eef2f7;
+      color: #1f2937;
+    }
+
+    .login-box {
+      width: 340px;
+      max-width: 92%;
+      margin: 100px auto;
+      padding: 28px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px #0002;
+      text-align: center;
+    }
+
+    .login-box h2 { color: #2563eb; }
+
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .topbar h1 { color: #2563eb; }
+
+    .panel {
+      background: white;
+      padding: 22px;
+      border-radius: 12px;
+      margin: 20px 0;
+      box-shadow: 0 3px 12px #0001;
+    }
+
+    input {
+      width: 100%;
+      padding: 11px;
+      margin: 7px 0 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+      margin: 3px;
+    }
+
+    button:hover { background: #1d4ed8; }
+    .delete { background: #dc2626; }
+    .delete:hover { background: #b91c1c; }
+    .edit { background: #15803d; }
+    .secondary { background: #64748b; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    th { background: #eff6ff; }
+
+    #message { color: #15803d; }
+    #error { color: #dc2626; white-space: pre-wrap; }
+    #dashboard { display: none; }
+  </style>
+</head>
+
+<body>
+
+  <section class="login-box" id="loginPage">
+    <h2>Cloud Application Login</h2>
+    <p>Student Management System</p>
+
+    <form id="loginForm">
+      <input id="email" type="email" placeholder="Email" required>
+      <input id="password" type="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+
+    <p id="loginMessage"></p>
+  </section>
+
+  <main class="container" id="dashboard">
+    <div class="topbar">
+      <h1>Student Dashboard</h1>
+      <button id="logoutBtn" class="secondary">Logout</button>
+    </div>
+
+    <p>Manage your student records using Firebase Cloud Firestore.</p>
+
+    <section class="panel">
+      <h2 id="formTitle">Add Student</h2>
+
+      <form id="studentForm">
+        <input id="studentName" placeholder="Student Name" required>
+        <input id="rollNo" placeholder="Roll Number" required>
+        <input id="department" placeholder="Department" required>
+        <input id="studentEmail" type="email" placeholder="Student Email" required>
+
+        <button type="submit" id="saveBtn">Add Student</button>
+        <button type="button" id="cancelBtn" class="secondary" hidden>
+          Cancel Edit
+        </button>
+      </form>
+
+      <p id="message"></p>
+      <p id="error"></p>
+    </section>
+
+    <section class="panel">
+      <h2>Student Records</h2>
+      <p id="count">Loading students...</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Roll Number</th>
+              <th>Department</th>
+              <th>Email</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="studentList"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from
+      "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      updateDoc,
+      deleteDoc,
+      doc
+    } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+    // Replace these values with your Firebase project configuration.
+    const firebaseConfig = {
+      apiKey: "AIzaSyA9JrrX8UX1QcNu2AyE805ViMkPefSbbhg",
+      authDomain: "cloudapplication-9425f.firebaseapp.com",
+      projectId: "cloudapplication-9425f",
+      appId: "1:445128126134:web:bd90a19196f7f239050017"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    let editingId = null;
+    let students = [];
+
+    const $ = id => document.getElementById(id);
+
+    function showError(message) {
+      $("error").textContent = message;
+      $("message").textContent = "";
+    }
+
+    function showMessage(message) {
+      $("message").textContent = message;
+      $("error").textContent = "";
+    }
+
+    function studentCollection() {
+      return collection(db, "users", currentUser.uid, "students");
+    }
+
+    $("loginForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      $("loginMessage").textContent = "Logging in...";
+
+      try {
+        await signInWithEmailAndPassword(
+          auth,
+          $("email").value.trim(),
+          $("password").value
+        );
+        $("loginMessage").textContent = "";
+      } catch (error) {
+        $("loginMessage").textContent =
+          "Login failed: " + error.message;
+      }
+    });
+
+    onAuthStateChanged(auth, async user => {
+      currentUser = user;
+
+      $("loginPage").style.display = user ? "none" : "block";
+      $("dashboard").style.display = user ? "block" : "none";
+
+      if (user) {
+        await loadStudents();
+      } else {
+        students = [];
+        $("studentList").replaceChildren();
+        $("count").textContent = "No students loaded";
+      }
+    });
+
+    async function loadStudents() {
+      $("count").textContent = "Loading students...";
+
+      try {
+        const snapshot = await getDocs(studentCollection());
+
+        students = snapshot.docs.map(item => ({
+          id: item.id,
+          ...item.data()
+        }));
+
+        renderStudents();
+        showMessage("Student records loaded successfully.");
+      } catch (error) {
+        $("count").textContent = "Could not load records.";
+        showError("Loading failed: " + error.message);
+      }
+    }
+
+    function renderStudents() {
+      const list = $("studentList");
+      list.replaceChildren();
+
+      $("count").textContent = "Total Students: " + students.length;
+
+      students.forEach(student => {
+        const tr = document.createElement("tr");
+
+        [
+          student.name,
+          student.rollNo,
+          student.department,
+          student.email
+        ].forEach(value => {
+          const td = document.createElement("td");
+          td.textContent = value || "";
+          tr.appendChild(td);
+        });
+
+        const actions = document.createElement("td");
+
+        const editButton = document.createElement("button");
+        editButton.textContent = "Edit";
+        editButton.className = "edit";
+        editButton.addEventListener("click", () => editStudent(student.id));
+
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.className = "delete";
+        deleteButton.addEventListener("click", () => deleteStudent(student.id));
+
+        actions.append(editButton, deleteButton);
+        tr.appendChild(actions);
+        list.appendChild(tr);
+      });
+    }
+
+    $("studentForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!currentUser) return;
+
+      const data = {
+        name: $("studentName").value.trim(),
+        rollNo: $("rollNo").value.trim(),
+        department: $("department").value.trim(),
+        email: $("studentEmail").value.trim()
+      };
+
+      $("saveBtn").disabled = true;
+      showMessage("Saving student...");
+
+      try {
+        if (editingId) {
+          await updateDoc(
+            doc(db, "users", currentUser.uid, "students", editingId),
+            data
+          );
+          showMessage("Student updated successfully!");
+        } else {
+          await addDoc(studentCollection(), data);
+          showMessage("Student added successfully!");
+        }
+
+        resetForm();
+        await loadStudents();
+      } catch (error) {
+        showError("Save failed: " + error.message);
+      } finally {
+        $("saveBtn").disabled = false;
+      }
+    });
+
+    function editStudent(id) {
+      const student = students.find(item => item.id === id);
+      if (!student) return;
+
+      editingId = id;
+      $("studentName").value = student.name || "";
+      $("rollNo").value = student.rollNo || "";
+      $("department").value = student.department || "";
+      $("studentEmail").value = student.email || "";
+
+      $("formTitle").textContent = "Update Student";
+      $("saveBtn").textContent = "Update Student";
+      $("cancelBtn").hidden = false;
+      showMessage("Edit the details and click Update Student.");
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function deleteStudent(id) {
+      const confirmed = confirm("Are you sure you want to delete this student?");
+      if (!confirmed || !currentUser) return;
+
+      try {
+        await deleteDoc(
+          doc(db, "users", currentUser.uid, "students", id)
+        );
+        showMessage("Student deleted successfully!");
+        if (editingId === id) resetForm();
+        await loadStudents();
+      } catch (error) {
+        showError("Delete failed: " + error.message);
+      }
+    }
+
+    function resetForm() {
+      editingId = null;
+      $("studentForm").reset();
+      $("formTitle").textContent = "Add Student";
+      $("saveBtn").textContent = "Add Student";
+      $("cancelBtn").hidden = true;
+    }
+
+    $("cancelBtn").addEventListener("click", resetForm);
+
+    $("logoutBtn").addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        $("loginForm").reset();
+        $("loginMessage").textContent = "";
+      } catch (error) {
+        showError("Logout failed: " + error.message);
+      }
+    });
+  </script>
+
+</body>
+</html>

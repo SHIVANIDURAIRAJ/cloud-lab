@@ -1,0 +1,19 @@
+sudo apt update
+sudo apt install wget tar -y
+cd ~/Downloads
+wget https://archive.apache.org/dist/spark/spark-3.5.0/spark-3.5.0-bin-hadoop3.tgz
+tar -xzf spark-3.5.0-bin-hadoop3.tgz
+sudo mv spark-3.5.0-bin-hadoop3 /usr/local/spark
+echo 'export SPARK_HOME=/usr/local/spark' >> ~/.bashrc
+echo 'export PATH=$PATH:$SPARK_HOME/bin' >> ~/.bashrc
+source ~/.bashrc
+Check Spark
+      -spark-shell
+Wait until you see scala>
+:quit
+echo "hello spark hello ubuntu spark is fast" > ~/input.txt
+spark-shell
+val input = sc.textFile("file:///home/" + sys.env("USER") + "/input.txt")
+val words = input.flatMap(line => line.split("\\s+"))
+val pairs = words.map(word => (word, 1))
+counts.collect().foreach(println)

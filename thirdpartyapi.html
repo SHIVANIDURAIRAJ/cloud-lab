@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #e3f2fd;
+            text-align: center;
+            padding-top: 80px;
+        }
+        .container {
+            background: white;
+            width: 320px;
+            margin: auto;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px #bbb;
+        }
+
+        input {
+            padding: 10px;
+            width: 90%;
+            margin-bottom: 15px;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0d47a1;
+        }
+
+        #result {
+            margin-top: 20px;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Weather Utility</h2>
+
+        <input type="text" id="city" placeholder="Enter city">
+        <br>
+        <button onclick="getWeather()">Get Weather</button>
+
+        <h3 id="result"></h3>
+    </div>
+
+    <script>
+        async function getWeather() {
+            const city = document.getElementById("city").value.trim();
+            const apiKey = "YOUR_API_KEY"; // Replace with your OpenWeatherMap API key
+            const result = document.getElementById("result");
+
+            if (!city) {
+                result.innerHTML = "Please enter a city name.";
+                return;
+            }
+
+            try {
+                result.innerHTML = "Loading...";
+
+                const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    result.innerHTML = "Error: " + data.message;
+                    return;
+                }
+
+                result.innerHTML =
+                    "City: " + data.name + "<br>" +
+                    "Temperature: " + data.main.temp + " °C<br>" +
+                    "Weather: " + data.weather[0].description;
+            } catch (error) {
+                result.innerHTML =
+                    "Network error. Check your internet connection.";
+            }
+        }
+    </script>
+
+</body>
+</html>

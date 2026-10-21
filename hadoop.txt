@@ -1,0 +1,30 @@
+#---Hadoop---#
+sudo apt update
+sudo apt install default-jdk ssh -y
+wget https://downloads.apache.org/hadoop/common/hadoop-3.4.2/hadoop-3.4.2.tar.gz
+tar -xzf hadoop-3.4.2.tar.gz
+cd ~
+ls -lh hadoop-3.4.2.tar.gz
+ls -ld ~/hadoop-3.4.2
+ls -la /usr/local/Hadoop
+cd ~
+tar -xzf hadoop-3.4.2.tar.gz-(for extraction)
+ls -ld ~/hadoop-3.4.2-(for verification)
+ls -la /usr/local/Hadoop/hadoop-3.4.2
+sudo rm -rf /usr/local/Hadoop/hadoop-3.4.2
+sudo mv ~/hadoop-3.4.2 /usr/local/Hadoop/
+ --- for mapreduce word cound---
+ cd /usr/local/Hadoop/hadoop-3.4.2
+mkdir input
+readlink -f "$(which java)"-java installation path
+nano ~/.bashrc
+inside nano ~/.bashrc- add these lines at end of file
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+export HADOOP_HOME=/usr/local/Hadoop/hadoop-3.4.2
+export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+(to save-crtl+O,Enter,crtl+X)
+nano "$HADOOP_HOME/etc/hadoop/hadoop-env.sh"
+--export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64-(add at end)
+echo "hello hadoop hello mapreduce" > input/file.txt
+bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.4.2.jar wordcount input output
+bin/hadoop fs -cat output/part-r-00000

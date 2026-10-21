@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TCENET Events</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f6fc;color:#10264a}
+header{background:#07152e;color:white;padding:22px 7%;display:flex;justify-content:space-between;align-items:center}
+header h2{margin:0}
+nav a{color:white;text-decoration:none;margin:0 10px}
+.hero{background:linear-gradient(120deg,#07152e,#1259a8);color:white;padding:55px 7%}
+.hero h1{font-size:42px;margin:0}
+.hero p{font-size:18px;line-height:1.6}
+main{padding:25px 7%;display:grid;grid-template-columns:2fr 1fr;gap:20px}
+.card{background:white;padding:22px;border-radius:10px;margin-bottom:20px;box-shadow:0 3px 12px #dce3ef}
+.event{border-bottom:1px solid #ddd;padding:12px 0}
+button{background:#1765f5;color:white;border:0;padding:11px 18px;border-radius:6px;cursor:pointer}
+button:hover{background:#0845b7}
+footer{text-align:center;background:#07152e;color:white;padding:20px}
+@media(max-width:650px){main{grid-template-columns:1fr}header{flex-wrap:wrap;gap:15px}nav a{margin:0 5px}.hero h1{font-size:32px}}
+</style>
+</head>
+<body>
+<header>
+<h2>✣ TCENET</h2>
+<nav>
+<a href="#home">Home</a>
+<a href="#events">Events</a>
+<a href="#about">About</a>
+</nav>
+</header>
+
+<section class="hero" id="home">
+<h1>TCENET Events</h1>
+<h3>Connect • Learn • Grow</h3>
+<p>Discover technical events, workshops, competitions and guest lectures.<br>
+Join us to learn new skills and connect with innovators.</p>
+<button onclick="document.getElementById('events').scrollIntoView()">Explore Events</button>
+</section>
+
+<main>
+<section>
+<div class="card" id="events">
+<h2>📅 Upcoming Events</h2>
+<div class="event">
+<h3>Tech Talks – Ideas to Impact</h3>
+<p>Learn about emerging technologies and innovation.</p>
+<p><b>Date:</b> 25 October 2026</p>
+<p><b>Time:</b> 10:00 AM – 1:00 PM</p>
+<p><b>Venue:</b> Auditorium, TCE</p>
+<button onclick="registerEvent('Tech Talks')">Register Now</button>
+</div>
+<div class="event">
+<h3>Code Sprint</h3>
+<p>Build, debug and showcase your coding skills.</p>
+<p><b>Date:</b> 28 October 2026</p>
+<p><b>Venue:</b> Computer Lab, TCE</p>
+<button onclick="registerEvent('Code Sprint')">Register Now</button>
+</div>
+<div class="event">
+<h3>Web Development Workshop</h3>
+<p>Learn the fundamentals of modern web development.</p>
+<p><b>Date:</b> 5 November 2026</p>
+<p><b>Venue:</b> Lab 1, TCE</p>
+<button onclick="registerEvent('Web Development Workshop')">Register Now</button>
+</div>
+</div>
+</section>
+
+<aside>
+<div class="card" id="about">
+<h2>Event Highlights</h2>
+<p>✓ Technical Workshops</p>
+<p>✓ Coding Competitions</p>
+<p>✓ Expert Guest Lectures</p>
+<p>✓ Networking Opportunities</p>
+</div>
+<div class="card">
+<h2>About TCENET</h2>
+<p>TCENET brings students together to explore technology, share ideas and develop practical skills.</p>
+</div>
+</aside>
+</main>
+
+<footer>
+<p>© 2026 TCENET | Event Information Portal</p>
+</footer>
+
+<script>
+function registerEvent(eventName){
+alert("You selected: "+eventName+
+". Registration details will be announced by TCENET.");
+}
+</script>
+</body>
+</html>
