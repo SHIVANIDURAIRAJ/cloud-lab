@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Currency Converter</title>
+</head>
+<body>
+    <h2>Currency Converter</h2>
+
+    <input type="number" id="amount" placeholder="Enter amount">
+
+    <select id="from">
+        <option value="USD">USD</option>
+        <option value="INR">INR</option>
+        <option value="EUR">EUR</option>
+    </select>
+
+    <select id="to">
+        <option value="INR">INR</option>
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+    </select>
+
+    <button onclick="convert()">Convert</button>
+
+    <h3 id="result"></h3>
+
+    <script>
+        async function convert() {
+            const amount = Number(
+                document.getElementById("amount").value
+            );
+            const from = document.getElementById("from").value;
+            const to = document.getElementById("to").value;
+
+            if (!Number.isFinite(amount) || amount <= 0) {
+                document.getElementById("result").innerText =
+                    "Enter a valid amount";
+                return;
+            }
+
+            try {
+                if (from === to) {
+                    document.getElementById("result").innerText =
+                        amount.toFixed(2) + " " + to;
+                    return;
+                }
+
+                const response = await fetch(
+                    `https://api.frankfurter.dev/v2/rate/${from}/${to}`
+                );
+
+                if (!response.ok) {
+                    throw new Error("Exchange rate unavailable");
+                }
+
+                const data = await response.json();
+                const converted = amount * data.rate;
+
+                document.getElementById("result").innerText =
+                    converted.toFixed(2) + " " + to;
+            } catch (error) {
+                document.getElementById("result").innerText =
+                    "Error fetching exchange rate";
+            }
+        }
+    </script>
+</body>
+</html>
